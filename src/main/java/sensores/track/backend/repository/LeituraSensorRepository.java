@@ -23,4 +23,7 @@ public interface LeituraSensorRepository extends JpaRepository<LeituraSensor, Lo
     @Query("SELECT l FROM LeituraSensor l WHERE l.sensor.id = :idSensor ORDER BY l.dataHora DESC LIMIT 1")
     LeituraSensor findUltimaLeituraBySensorId(@Param("idSensor") Long idSensor);
 
+    LeituraSensor findTop1BySensorIdOrderByIdDesc(Long idSensor);
+
+
 }

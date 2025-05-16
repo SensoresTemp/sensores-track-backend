@@ -46,7 +46,7 @@ public class LeituraSensorController {
 
     @GetMapping("/{idSensor}/ultima-leitura")
     public ResponseEntity<LeituraSensorResponseDTO> obterUltimaLeitura(@PathVariable Long idSensor) {
-        LeituraSensor ultima = leituraRepo.findUltimaLeituraBySensorId(idSensor);
+        LeituraSensor ultima = leituraRepo.findTop1BySensorIdOrderByIdDesc(idSensor);
 
         if (ultima == null) {
             return ResponseEntity.notFound().build();
