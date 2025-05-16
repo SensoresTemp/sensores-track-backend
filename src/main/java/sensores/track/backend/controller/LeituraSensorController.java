@@ -44,6 +44,18 @@ public class LeituraSensorController {
         return leituraRepo.findBySensorId(idSensor).stream().map(this::toResponse).toList();
     }
 
+    @GetMapping("/{idSensor}/ultima-leitura")
+    public ResponseEntity<LeituraSensorResponseDTO> obterUltimaLeitura(@PathVariable Long idSensor) {
+        LeituraSensor ultima = leituraRepo.findUltimaLeituraBySensorId(idSensor);
+
+        if (ultima == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(toResponse(ultima));
+    }
+
+
     @GetMapping("/por-tipo")
     public List<LeituraSensorResponseDTO> listarPorTipo(@RequestParam String tipo) {
         return leituraRepo.findByTipoSensor(tipo).stream().map(this::toResponse).toList();

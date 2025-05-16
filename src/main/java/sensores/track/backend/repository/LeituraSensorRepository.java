@@ -20,4 +20,7 @@ public interface LeituraSensorRepository extends JpaRepository<LeituraSensor, Lo
 
     List<LeituraSensor> findByDataHoraBetween(LocalDateTime inicio, LocalDateTime fim);
 
+    @Query("SELECT l FROM LeituraSensor l WHERE l.sensor.id = :idSensor ORDER BY l.dataHora DESC LIMIT 1")
+    LeituraSensor findUltimaLeituraBySensorId(@Param("idSensor") Long idSensor);
+
 }
