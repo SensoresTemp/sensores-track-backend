@@ -20,7 +20,6 @@ public class LeituraSensorDTO {
     @NotNull(message = "O valor é obrigatório.")
     private BigDecimal valor;
 
-    @NotNull(message = "A data e hora da leitura são obrigatórias.")
     private LocalDateTime dataHora;
 
 }

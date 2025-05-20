@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/api/leitura/sensor")
@@ -29,7 +31,9 @@ public class LeituraSensorController {
         Sensor sensor = sensorRepo.findById(dto.getIdSensor())
                 .orElseThrow(() -> new EntityNotFoundException("Sensor não encontrado"));
 
-        LeituraSensor leitura = new LeituraSensor(null, sensor, dto.getValor(), dto.getDataHora());
+        ZonedDateTime dataHoraBrasil = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+
+        LeituraSensor leitura = new LeituraSensor(null, sensor, dto.getValor(), dataHoraBrasil.toLocalDateTime());
         leituraRepo.save(leitura);
         return ResponseEntity.ok().build();
     }
