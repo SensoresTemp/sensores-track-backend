@@ -66,24 +66,9 @@ public class LeituraSensorController {
     public List<LeituraSensorResponseDTO> listarPorTipoEData(@RequestParam String tipo,
                                                              @RequestParam LocalDateTime dataInicio,
                                                              @RequestParam LocalDateTime dataFim) {
-        ZoneId zone = ZoneId.of("America/Sao_Paulo");
 
-        LocalDateTime inicio = dataInicio.atZone(ZoneOffset.UTC).withZoneSameInstant(zone).toLocalDateTime();
-        LocalDateTime fim = dataFim.atZone(ZoneOffset.UTC).withZoneSameInstant(zone).toLocalDateTime();
-
-        return leituraRepo.findByTipoSensorAndData(tipo, inicio, fim).stream().map(this::toResponse).toList();
+        return leituraRepo.findByTipoSensorAndData(tipo, dataInicio, dataFim).stream().map(this::toResponse).toList();
     }
-
-    @GetMapping("/por-tipo/intervalo/fusohorario")
-    public List<LeituraSensorResponseDTO> listarPorTipoEData(@RequestParam String tipo,
-                                                             @RequestParam OffsetDateTime dataInicio,
-                                                             @RequestParam OffsetDateTime dataFim) {
-        LocalDateTime inicio = dataInicio.atZoneSameInstant(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
-        LocalDateTime fim = dataFim.atZoneSameInstant(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
-
-        return leituraRepo.findByTipoSensorAndData(tipo, inicio, fim).stream().map(this::toResponse).toList();
-    }
-
 
     @GetMapping("/hoje")
     public List<LeituraSensorResponseDTO> listarLeiturasHoje() {
