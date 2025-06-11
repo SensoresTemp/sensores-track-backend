@@ -74,8 +74,11 @@ public class LeituraSensorController {
 
     @GetMapping("/hoje")
     public List<LeituraSensorResponseDTO> listarLeiturasHoje() {
-        LocalDateTime inicio = LocalDate.now().atStartOfDay();
-        LocalDateTime fim = LocalDate.now().atTime(23, 59, 59);
+        ZonedDateTime agoraBrasil = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+        LocalDate hojeBrasil = agoraBrasil.toLocalDate();
+
+        LocalDateTime inicio = hojeBrasil.atStartOfDay();
+        LocalDateTime fim = hojeBrasil.atTime(23, 59, 59);
 
         return leituraRepo.findByDataHoraBetween(inicio, fim).stream()
                 .map(this::toResponse)
