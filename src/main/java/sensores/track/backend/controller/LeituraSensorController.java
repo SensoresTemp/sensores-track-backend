@@ -12,11 +12,8 @@ import sensores.track.backend.repository.SensorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
-import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/api/leitura/sensor")
@@ -69,8 +66,24 @@ public class LeituraSensorController {
     public List<LeituraSensorResponseDTO> listarPorTipoEData(@RequestParam String tipo,
                                                              @RequestParam LocalDateTime dataInicio,
                                                              @RequestParam LocalDateTime dataFim) {
-        return leituraRepo.findByTipoSensorAndData(tipo, dataInicio, dataFim).stream().map(this::toResponse).toList();
+        ZoneId zone = ZoneId.of("America/Sao_Paulo");
+
+        LocalDateTime inicio = dataInicio.atZone(ZoneOffset.UTC).withZoneSameInstant(zone).toLocalDateTime();
+        LocalDateTime fim = dataFim.atZone(ZoneOffset.UTC).withZoneSameInstant(zone).toLocalDateTime();
+
+        return leituraRepo.findByTipoSensorAndData(tipo, inicio, fim).stream().map(this::toResponse).toList();
     }
+
+    @GetMapping("/por-tipo/intervalo/fusohorario")
+    public List<LeituraSensorResponseDTO> listarPorTipoEData(@RequestParam String tipo,
+                                                             @RequestParam OffsetDateTime dataInicio,
+                                                             @RequestParam OffsetDateTime dataFim) {
+        LocalDateTime inicio = dataInicio.atZoneSameInstant(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
+        LocalDateTime fim = dataFim.atZoneSameInstant(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
+
+        return leituraRepo.findByTipoSensorAndData(tipo, inicio, fim).stream().map(this::toResponse).toList();
+    }
+
 
     @GetMapping("/hoje")
     public List<LeituraSensorResponseDTO> listarLeiturasHoje() {
