@@ -25,6 +25,7 @@ public class SensorDTO {
     private String unidade;
 
     private BigDecimal limitePpm;
+    private BigDecimal limiteMinimoPpm;
 
     @NotNull(message = "O tipo do sensor é obrigatório.")
     private Long idTipoSensor;

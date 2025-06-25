@@ -24,6 +24,7 @@ public class SensorMapper {
         sensor.setUnidade(dto.getUnidade());
         sensor.setLimitePpm(dto.getLimitePpm());
         sensor.setTipoSensor(tipoSensor);
+        sensor.setLimiteMinimoPpm(dto.getLimiteMinimoPpm());
         return sensor;
     }
 
@@ -35,6 +36,7 @@ public class SensorMapper {
         dto.setUnidade(entity.getUnidade());
         dto.setLimitePpm(entity.getLimitePpm());
         dto.setIdTipoSensor(entity.getTipoSensor().getId());
+        dto.setLimiteMinimoPpm(entity.getLimiteMinimoPpm());
         return dto;
     }
 }

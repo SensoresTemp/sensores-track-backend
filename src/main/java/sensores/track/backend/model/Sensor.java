@@ -21,6 +21,7 @@ public class Sensor {
     private String descricao;
     private String unidade;
     private BigDecimal limitePpm;
+    private BigDecimal limiteMinimoPpm;
 
     @ManyToOne
     @JoinColumn(name = "id_tipo_sensor", nullable = false)
