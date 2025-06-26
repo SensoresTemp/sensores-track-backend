@@ -3,6 +3,8 @@ package sensores.track.backend.controller;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import sensores.track.backend.model.LeituraSensor;
 import sensores.track.backend.model.dto.LeituraSensorDTO;
 import sensores.track.backend.model.Sensor;
@@ -69,6 +71,21 @@ public class LeituraSensorController {
 
         return leituraRepo.findByTipoSensorAndData(tipo, dataInicio, dataFim).stream().map(this::toResponse).toList();
     }
+
+    @GetMapping("/por-tipo/intervalo/paginado")
+    public ResponseEntity<Page<LeituraSensorResponseDTO>> listarPorTipoEDataPaginado(
+            @RequestParam String tipo,
+            @RequestParam LocalDateTime dataInicio,
+            @RequestParam LocalDateTime dataFim,
+            Pageable pageable) {
+
+        Page<LeituraSensor> page = leituraRepo.findByTipoSensorAndDataPaginado(tipo, dataInicio, dataFim, pageable);
+
+        Page<LeituraSensorResponseDTO> response = page.map(this::toResponse);
+
+        return ResponseEntity.ok(response);
+    }
+
 
     @GetMapping("/hoje")
     public List<LeituraSensorResponseDTO> listarLeiturasHoje() {
