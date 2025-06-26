@@ -5,15 +5,19 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import sensores.track.backend.model.ConfiguracaoAlerta;
 import sensores.track.backend.model.LeituraSensor;
 import sensores.track.backend.model.dto.LeituraSensorDTO;
 import sensores.track.backend.model.Sensor;
 import sensores.track.backend.model.dto.LeituraSensorResponseDTO;
+import sensores.track.backend.repository.ConfiguracaoAlertaRepository;
 import sensores.track.backend.repository.LeituraSensorRepository;
 import sensores.track.backend.repository.SensorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sensores.track.backend.service.EmailService;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.List;
 
@@ -24,29 +28,69 @@ public class LeituraSensorController {
 
     private final LeituraSensorRepository leituraRepo;
     private final SensorRepository sensorRepo;
+    private final ConfiguracaoAlertaRepository alertaRepo;
+    private final EmailService emailService;
 
+    /**
+     * Registra uma nova leitura de sensor no sistema.
+     * Converte a data/hora atual para o fuso horário de São Paulo.
+     */
     @PostMapping
     public ResponseEntity<Void> registrarLeitura(@Valid @RequestBody LeituraSensorDTO dto) {
+
         Sensor sensor = sensorRepo.findById(dto.getIdSensor())
                 .orElseThrow(() -> new EntityNotFoundException("Sensor não encontrado"));
 
         ZonedDateTime dataHoraBrasil = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
-
         LeituraSensor leitura = new LeituraSensor(null, sensor, dto.getValor(), dataHoraBrasil.toLocalDateTime());
+
         leituraRepo.save(leitura);
+
+        // Verifica se leitura está fora dos limites
+        BigDecimal valor = dto.getValor();
+        if (sensor.getLimiteMinimoPpm() != null && valor.compareTo(sensor.getLimiteMinimoPpm()) < 0 ||
+                sensor.getLimitePpm() != null && valor.compareTo(sensor.getLimitePpm()) > 0) {
+
+            // Busca os emails configurados
+            List<ConfiguracaoAlerta> destinatarios = alertaRepo.findAll();
+
+            for (ConfiguracaoAlerta alerta : destinatarios) {
+                try {
+                    emailService.sendAlertEmail(
+                            alerta.getEmail(),
+                            sensor.getTipoSensor().getTipo(),
+                            valor,
+                            sensor.getLimiteMinimoPpm(),
+                            sensor.getLimitePpm()
+                    );
+                } catch (Exception e) {
+                    System.err.println("Erro ao enviar e-mail para " + alerta.getEmail() + ": " + e.getMessage());
+                }
+            }
+        }
+
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Lista todas as leituras registradas no sistema (sem filtro).
+     */
     @GetMapping
     public List<LeituraSensorResponseDTO> listarTodas() {
         return leituraRepo.findAll().stream().map(this::toResponse).toList();
     }
 
+    /**
+     * Lista todas as leituras de um sensor específico, identificado pelo seu ID.
+     */
     @GetMapping("/{idSensor}")
     public List<LeituraSensorResponseDTO> listarPorSensor(@PathVariable Long idSensor) {
         return leituraRepo.findBySensorId(idSensor).stream().map(this::toResponse).toList();
     }
 
+    /**
+     * Retorna a última leitura registrada para um sensor específico.
+     */
     @GetMapping("/{idSensor}/ultima-leitura")
     public ResponseEntity<LeituraSensorResponseDTO> obterUltimaLeitura(@PathVariable Long idSensor) {
         LeituraSensor ultima = leituraRepo.findTop1BySensorIdOrderByIdDesc(idSensor);
@@ -58,12 +102,17 @@ public class LeituraSensorController {
         return ResponseEntity.ok(toResponse(ultima));
     }
 
-
+    /**
+     * Lista as leituras filtrando pelo tipo de sensor (ex: "Temperatura", "Umidade").
+     */
     @GetMapping("/por-tipo")
     public List<LeituraSensorResponseDTO> listarPorTipo(@RequestParam String tipo) {
         return leituraRepo.findByTipoSensor(tipo).stream().map(this::toResponse).toList();
     }
 
+    /**
+     * Lista as leituras de um tipo específico de sensor, dentro de um intervalo de datas.
+     */
     @GetMapping("/por-tipo/intervalo")
     public List<LeituraSensorResponseDTO> listarPorTipoEData(@RequestParam String tipo,
                                                              @RequestParam LocalDateTime dataInicio,
@@ -72,6 +121,10 @@ public class LeituraSensorController {
         return leituraRepo.findByTipoSensorAndData(tipo, dataInicio, dataFim).stream().map(this::toResponse).toList();
     }
 
+    /**
+     * Versão paginada da listagem por tipo de sensor e intervalo de datas.
+     * Permite obter os resultados em páginas usando o objeto Pageable.
+     */
     @GetMapping("/por-tipo/intervalo/paginado")
     public ResponseEntity<Page<LeituraSensorResponseDTO>> listarPorTipoEDataPaginado(
             @RequestParam String tipo,
@@ -80,13 +133,14 @@ public class LeituraSensorController {
             Pageable pageable) {
 
         Page<LeituraSensor> page = leituraRepo.findByTipoSensorAndDataPaginado(tipo, dataInicio, dataFim, pageable);
-
         Page<LeituraSensorResponseDTO> response = page.map(this::toResponse);
 
         return ResponseEntity.ok(response);
     }
 
-
+    /**
+     * Lista todas as leituras registradas no dia atual (hoje), com base no horário de São Paulo.
+     */
     @GetMapping("/hoje")
     public List<LeituraSensorResponseDTO> listarLeiturasHoje() {
         ZonedDateTime agoraBrasil = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
@@ -100,7 +154,9 @@ public class LeituraSensorController {
                 .toList();
     }
 
-    // --- Mapeamento manual para ResponseDTO
+    /**
+     * Converte a entidade LeituraSensor para um DTO de resposta, adicionando informações do tipo de sensor.
+     */
     private LeituraSensorResponseDTO toResponse(LeituraSensor leitura) {
         LeituraSensorResponseDTO dto = new LeituraSensorResponseDTO();
         dto.setId(leitura.getId());
