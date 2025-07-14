@@ -1,5 +1,7 @@
 package sensores.track.backend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
@@ -21,5 +23,8 @@ public class LeituraSensorDTO {
     private BigDecimal valor;
 
     private LocalDateTime dataHora;
+
+    @JsonSetter(nulls = Nulls.SKIP)
+    private Long idConta = 1L;
 
 }

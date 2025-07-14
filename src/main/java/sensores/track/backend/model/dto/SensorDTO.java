@@ -1,5 +1,7 @@
 package sensores.track.backend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -29,5 +31,8 @@ public class SensorDTO {
 
     @NotNull(message = "O tipo do sensor é obrigatório.")
     private Long idTipoSensor;
+
+    @JsonSetter(nulls = Nulls.SKIP)
+    private Long idConta = 1L;
 
 }

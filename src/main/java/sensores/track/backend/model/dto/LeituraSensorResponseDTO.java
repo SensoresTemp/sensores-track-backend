@@ -1,5 +1,7 @@
 package sensores.track.backend.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,4 +15,7 @@ public class LeituraSensorResponseDTO {
     private BigDecimal valor;
     private LocalDateTime dataHora;
     private String tipoSensor;
+
+    @JsonSetter(nulls = Nulls.SKIP)
+    private Long idConta = 1L;
 }

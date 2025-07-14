@@ -28,4 +28,9 @@ public class Sensor {
     @JsonIgnore
     private TipoSensor tipoSensor;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_conta", nullable = true)
+    @JsonIgnore
+    private Conta conta;
+
 }
