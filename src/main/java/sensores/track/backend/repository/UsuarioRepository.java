@@ -17,4 +17,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Busca um usuário específico por ID e conta (padrão multi-tenant seguro)
     Optional<Usuario> findByIdAndConta_Id(Long id, Long idConta);
 
+    Optional<Usuario> findByEmailAndSenha(String email, String senha);
 }

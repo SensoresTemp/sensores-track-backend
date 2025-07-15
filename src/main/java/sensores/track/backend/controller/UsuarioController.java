@@ -2,13 +2,13 @@ package sensores.track.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sensores.track.backend.mapper.SensorMapper;
 import sensores.track.backend.mapper.UsuarioMapper;
 import sensores.track.backend.model.Usuario;
 import sensores.track.backend.model.Conta;
+import sensores.track.backend.model.dto.LoginRequestDTO;
+import sensores.track.backend.model.dto.LoginResponseDTO;
 import sensores.track.backend.model.dto.UsuarioRequestDTO;
 import sensores.track.backend.model.dto.UsuarioResponseDTO;
 import sensores.track.backend.repository.ContaRepository;
@@ -56,4 +56,17 @@ public class UsuarioController {
 
         return ResponseEntity.ok(dtos);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
+
+        return usuarioRepo.findByEmailAndSenha(dto.email(), dto.senha())
+                .<ResponseEntity<?>>map(u -> ResponseEntity.ok(
+                        new LoginResponseDTO(u.getId(), u.getConta().getId())
+                ))
+                .orElseGet(() -> ResponseEntity.status(401)
+                        .body("Usuário ou senha inválidos"));
+    }
+
+
 }
