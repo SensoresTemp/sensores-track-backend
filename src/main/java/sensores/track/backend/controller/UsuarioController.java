@@ -15,7 +15,6 @@ import sensores.track.backend.repository.ContaRepository;
 import sensores.track.backend.repository.UsuarioRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,14 +29,42 @@ public class UsuarioController {
      * Cadastra um novo usuário.
      */
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> cadastrar(@Valid @RequestBody UsuarioRequestDTO dto) {
-        Conta conta = contaRepo.findById(dto.getIdConta())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+    public ResponseEntity<?> cadastrar(@Valid @RequestBody UsuarioRequestDTO dto) {
+        return contaRepo.findById(dto.getIdConta())
+                .<ResponseEntity<?>>map(conta -> {
+                    Usuario usuario = usuarioMapper.toEntity(dto, conta);
+                    Usuario salvo = usuarioRepo.save(usuario);
+                    return ResponseEntity.ok(usuarioMapper.toResponse(salvo));
+                })
+                .orElseGet(() -> ResponseEntity.badRequest().body("Conta não encontrada"));
+    }
 
-        Usuario usuario = usuarioMapper.toEntity(dto, conta);
-        Usuario salvo = usuarioRepo.save(usuario);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizar(@PathVariable Long id,
+                                       @Valid @RequestBody UsuarioRequestDTO dto) {
+        return usuarioRepo.findById(id)
+                .<ResponseEntity<?>>map(usuarioExistente -> {
+                    Conta conta = contaRepo.findById(dto.getIdConta())
+                            .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
 
-        return ResponseEntity.ok(usuarioMapper.toResponse(salvo));
+                    usuarioExistente.setEmail(dto.getEmail());
+                    usuarioExistente.setSenha(dto.getSenha());
+                    usuarioExistente.setPerfil(dto.getPerfil());
+                    usuarioExistente.setConta(conta);
+
+                    return ResponseEntity.ok(usuarioMapper.toResponse(usuarioRepo.save(usuarioExistente)));
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body("Usuário não encontrado"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        return usuarioRepo.findById(id)
+                .<ResponseEntity<?>>map(usuario -> {
+                    usuarioRepo.delete(usuario);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body("Usuário não encontrado"));
     }
 
     /**
@@ -62,11 +89,9 @@ public class UsuarioController {
 
         return usuarioRepo.findByEmailAndSenha(dto.email(), dto.senha())
                 .<ResponseEntity<?>>map(u -> ResponseEntity.ok(
-                        new LoginResponseDTO(u.getId(), u.getConta().getId())
+                        new LoginResponseDTO(u.getId(), u.getConta().getId(), u.getPerfil().getDescricao())
                 ))
                 .orElseGet(() -> ResponseEntity.status(401)
                         .body("Usuário ou senha inválidos"));
     }
-
-
 }
