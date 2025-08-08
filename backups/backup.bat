@@ -2,11 +2,11 @@
 setlocal
 
 REM === CONFIGURAÇÕES DO BANCO ===
-set PGUSER=admin
-set PGPASSWORD=abxKnVICdETWxpnb8ckjPNZgwEqbTrD5
-set PGHOST=dpg-d16655p5pdvs73bff06g-a.oregon-postgres.render.com
+set PGUSER=sensoresdb2_2s7n_user
+set PGPASSWORD=hOZ7kXhSUsOBAQy5bUcmBSf9by2kZZ2P
+set PGHOST=dpg-d1ns55buibrs738dmutg-a.oregon-postgres.render.com
 set PGPORT=5432
-set PGDATABASE=sensoresdb2
+set PGDATABASE=sensoresdb2_2s7n
 
 REM === CAMINHO DO pg_dump (ajuste se necessário) ===
 set PGBIN="C:\Program Files\PostgreSQL\16\bin"
