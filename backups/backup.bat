@@ -3,13 +3,13 @@ setlocal
 
 REM === CONFIGURAÇÕES DO BANCO ===
 set PGUSER=admin
-set PGPASSWORD=hZ7SrQxc6ncSjk6t3PxJga092RlSsUT9
-set PGHOST=dpg-d2au6tqdbo4c73a98q3g-a.oregon-postgres.render.com
+set PGPASSWORD=l62IMQYnJRuy2bPI8kj9BARGa7kUSm1p
+set PGHOST=dpg-d45ng0muk2gs73cm9adg-a.oregon-postgres.render.com
 set PGPORT=5432
-set PGDATABASE=sensoresdb3
+set PGDATABASE=sensoresdb5_3dlo
 
 REM === CAMINHO DO pg_dump (ajuste se necessário) ===
-set PGBIN="C:\Program Files\PostgreSQL\16\bin"
+set PGBIN="C:\Program Files\PostgreSQL\17\bin"
 
 REM === GERAR TIMESTAMP ===
 for /f "tokens=1-4 delims=/ " %%a in ('date /t') do (
